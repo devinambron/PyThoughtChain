@@ -63,4 +63,3 @@ If you would like to contribute to this project, please follow these steps:
 This project is licensed under the [MIT License](LICENSE).
 
 **Attribution:** This project was originally based on [ReflectionAnyLLM](https://github.com/antibitcoin/ReflectionAnyLLM), which was developed in PHP.
-I removed the `pip install` step and moved the attribution to the bottom of the file. I also reitereated that this application is setup for use in LM Studio.
