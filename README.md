@@ -28,9 +28,17 @@ PyThoughtChain is a Python-based chat application that utilizes the OpenAI API t
    ```
    cd PyThoughtChain
    ```
-3. Install the required dependencies:
+3. Run the setup script:
+   ```
+   python setup.py
+   ```
+4. Install the required dependencies:
    ```
    pip install -r requirements.txt
+   ```
+5. Run the application:
+   ```
+   python -m app.main
    ```
 
 ## Usage
