@@ -43,7 +43,7 @@ PyThoughtChain is a Python-based chat application that utilizes the OpenAI API t
 
 2. Run the application:
    ```
-   python main.py
+   python -m app.main
    ```
 3. Follow the on-screen instructions to interact with the chat application.
 
