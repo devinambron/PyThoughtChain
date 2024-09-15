@@ -8,7 +8,22 @@ YELLOW = '\033[33m'
 RESET = '\033[0m'
 
 def format_bold_text(text):
-    return re.sub(r'\*\*(.*?)\*\*', f'{BOLD}\\1{RESET}', text)
+    formatted_text = ""
+    bold_start = -1
+    i = 0
+    while i < len(text):
+        if text[i:i+2] == '**':
+            if bold_start == -1:
+                formatted_text += BOLD
+                bold_start = i
+            else:
+                formatted_text += RESET
+                bold_start = -1
+            i += 2
+        else:
+            formatted_text += text[i]
+            i += 1
+    return formatted_text
 
 def get_user_feedback():
     while True:
