@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from app.services.chat_service import chat
-from app.utils import BOLD, GREEN, RESET
+from app.utils import BOLD, RED, RESET
 import argparse
 
 load_dotenv()

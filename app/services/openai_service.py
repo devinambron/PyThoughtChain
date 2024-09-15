@@ -1,7 +1,8 @@
 import os
 import openai
 from dotenv import load_dotenv
-from app.utils import BOLD, RED, YELLOW, RESET
+from app.utils import BOLD, RED, YELLOW, RESET, stream_format
+
 
 load_dotenv()
 

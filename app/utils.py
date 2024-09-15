@@ -8,21 +8,25 @@ YELLOW = '\033[33m'
 RESET = '\033[0m'
 
 def format_bold_text(text):
+    state = {'bold': False}
     formatted_text = ""
-    bold_start = -1
+
+    def toggle_bold():
+        state['bold'] = not state['bold']
+        return BOLD if state['bold'] else RESET
+
     i = 0
     while i < len(text):
         if text[i:i+2] == '**':
-            if bold_start == -1:
-                formatted_text += BOLD
-                bold_start = i
-            else:
-                formatted_text += RESET
-                bold_start = -1
+            formatted_text += toggle_bold()
             i += 2
         else:
             formatted_text += text[i]
             i += 1
+    
+    if state['bold']:  # Ensure we close any open bold tags
+        formatted_text += RESET
+    
     return formatted_text
 
 def get_user_feedback():
@@ -45,6 +49,31 @@ def calculate_confidence_score(thought_process):
     total_score = confidence_score - uncertainty_score
     normalized_score = (total_score + 5) / 10
     return max(0, min(1, normalized_score))
+
+def process_buffer(buffer):
+    formatted_content = ""
+    while '**' in buffer:
+        parts = buffer.split('**', 2)
+        if len(parts) >= 2:
+            formatted_content += format_bold_text(parts[0] + '**' + parts[1] + '**')
+            buffer = ''.join(parts[2:])
+        else:
+            break
+    return formatted_content, buffer
+
+def stream_format(response, process_func):
+    buffer = ""
+    for chunk in response:
+        if chunk.choices[0].delta.content is not None:
+            content = chunk.choices[0].delta.content
+            buffer += content
+            formatted_content, remaining_buffer = process_func(buffer)
+            if formatted_content:
+                yield formatted_content
+            buffer = remaining_buffer
+    
+    if buffer:
+        yield format_bold_text(buffer)
 
 def generate_mind_map(thought_process):
     lines = thought_process.split('\n')

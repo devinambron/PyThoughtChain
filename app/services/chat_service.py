@@ -1,5 +1,5 @@
 import os
-from app.utils import format_bold_text, get_user_feedback, calculate_confidence_score, generate_mind_map, BOLD, RED, GREEN, CYAN, YELLOW, RESET
+from app.utils import stream_format, process_buffer, format_bold_text, get_user_feedback, calculate_confidence_score, generate_mind_map, BOLD, RED, GREEN, CYAN, YELLOW, RESET
 from app.services.openai_service import call_openai, prepare_messages, determine_task_type_and_criteria
 from app.prompts import get_thought_process_prompt, get_final_answer_prompt
 
@@ -43,25 +43,10 @@ def chat():
 
                 new_thoughts = ""
                 print(f"{BOLD}{YELLOW}Thought Process (Iteration {iteration}): {RESET}", end="", flush=True)
-                buffer = ""
-                for chunk in response:
-                    if chunk.choices[0].delta.content is not None:
-                        content = chunk.choices[0].delta.content
-                        buffer += content
-                        while '**' in buffer:
-                            parts = buffer.split('**', 2)
-                            if len(parts) >= 2:
-                                formatted_content = format_bold_text(parts[0] + '**' + parts[1] + '**')
-                                print(formatted_content, end="", flush=True)
-                                new_thoughts += parts[0] + '**' + parts[1] + '**'
-                                buffer = ''.join(parts[2:])
-                            else:
-                                break
-                if buffer:
-                    formatted_content = format_bold_text(buffer)
+                for formatted_content in stream_format(response, process_buffer):
                     print(formatted_content, end="", flush=True)
-                    new_thoughts += buffer
-                print()  # New line after streaming is complete
+                    new_thoughts += formatted_content
+                print()
 
                 confidence_score = calculate_confidence_score(new_thoughts)
                 print(f"{BOLD}{YELLOW}Confidence Score: {RESET}{confidence_score:.2f}")
@@ -95,17 +80,16 @@ def chat():
                 if chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
                     buffer += content
-                    while '**' in buffer:
-                        parts = buffer.split('**', 2)
-                        if len(parts) >= 2:
-                            print(format_bold_text(parts[0] + '**' + parts[1] + '**'), end="", flush=True)
-                            final_answer += parts[0] + '**' + parts[1] + '**'
-                            buffer = ''.join(parts[2:])
-                        else:
-                            break
+                    formatted_content, remaining_buffer = process_buffer(buffer)
+                    if formatted_content:
+                        print(formatted_content, end="", flush=True)
+                        final_answer += formatted_content
+                    buffer = remaining_buffer
+            
             if buffer:
-                print(format_bold_text(buffer), end="", flush=True)
-                final_answer += buffer
+                formatted_content = format_bold_text(buffer)
+                print(formatted_content, end="", flush=True)
+                final_answer += formatted_content
             print()  # New line after streaming is complete
 
             chat_history.append({'sender': 'user', 'text': user_message})

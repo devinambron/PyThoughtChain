@@ -1,6 +1,6 @@
 # PyThoughtChain
 
-PyThoughtChain is a Python-based chat application that utilizes the OpenAI API to provide a conversational interface with advanced chain of thought capabilities. This project is a fork of the [ReflectionAnyLLM](https://github.com/antibitcoin/ReflectionAnyLLM) project, which was originally developed in PHP.
+PyThoughtChain is a Python-based chat application that utilizes the OpenAI API to provide a conversational interface with advanced chain of thought capabilities.
 
 ## Features
 
@@ -32,28 +32,19 @@ PyThoughtChain is a Python-based chat application that utilizes the OpenAI API t
    ```
    python setup.py
    ```
-4. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-5. Run the application:
+4. Run the application:
    ```
    python -m app.main
    ```
 
 ## Usage
 
-1. Open the `main.py` file and update the `OpenAI` configuration with your own API key and base URL.
 
-   ```python
-   client = openai.OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
-   ```
-
-2. Run the application:
+1. Run the application:
    ```
    python -m app.main
    ```
-3. Follow the on-screen instructions to interact with the chat application.
+2. Follow the on-screen instructions to interact with the chat application.
 
 **Note:** This application has been tested with the LM Studio on an M1 Pro Max processor using the latest Llama3.1-8B model. Caution is advised when using any APIs with non-locally hosted models due to the potential for high token counts, which may result in unexpected behavior or costs. Use this application at your own risk if you are not using a local language model.
 
@@ -70,3 +61,6 @@ If you would like to contribute to this project, please follow these steps:
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+**Attribution:** This project was originally based on [ReflectionAnyLLM](https://github.com/antibitcoin/ReflectionAnyLLM), which was developed in PHP.
+I removed the `pip install` step and moved the attribution to the bottom of the file. I also reitereated that this application is setup for use in LM Studio.
