@@ -1,6 +1,7 @@
 # Ignore virtual environment files (.venv/ or venv/)
 venv/
 .venv/
+my_env/
 
 # Ignore OpenAI API keys (store them in an environment variable or a secrets manager instead)
 .env
