@@ -41,6 +41,18 @@ task_specific_prompts = {
     """
 }
 
+def get_task_type_prompt(user_message):
+    return f"""Analyze the following user message and determine the most appropriate task type from the list below:
+    - product_development
+    - scientific_research
+    - creative_writing
+    - coding
+    - general
+
+User message: "{user_message}"
+
+Respond with only the task type, in lowercase, without any additional text or explanation."""
+
 def get_thought_process_prompt(iteration=1, task_type='general'):
     task_type = task_type if task_type in task_specific_prompts else 'general'
 
@@ -52,7 +64,6 @@ Explore hypothetical "what-if" scenarios and potential counterarguments.
 Incorporate quantitative analysis where appropriate.
 Do not return a final answer, just return the step-by-step thought process."""
 
-# Function to generate the final answer prompt
 def get_final_answer_prompt(thought_process, evaluation_criteria):
     return f"""You are an AI assistant providing a final answer based on the following thought process:
 

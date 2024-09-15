@@ -42,4 +42,13 @@ def main():
             traceback.print_exc()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run the chat application')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose logging')
+    parser.add_argument('-i', '--iterations', type=int, help='Set the number of iterations before feedback')
+    args = parser.parse_args()
     main()
+
+    if args.iterations is not None:
+        CONFIG['iterations_before_feedback'] = args.iterations
+        save_config(CONFIG)
+        print(f"{BOLD}{GREEN}Updated iterations before feedback to {args.iterations}{RESET}")

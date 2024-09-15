@@ -5,7 +5,7 @@ from app.utils import (
     calculate_confidence_score, generate_mind_map, BOLD, RED, GREEN, CYAN, YELLOW, RESET
 )
 from app.services.openai_service import call_openai, prepare_messages, determine_task_type_and_criteria
-from app.prompts import get_thought_process_prompt, get_final_answer_prompt
+from app.prompts import get_task_type_prompt, get_thought_process_prompt, get_final_answer_prompt
 
 def chat():
     chat_history = []
@@ -26,9 +26,12 @@ def chat():
                 print(f"{BOLD}{RED}Error: Empty message.{RESET}")
                 continue
 
+            # Determine task type and evaluation criteria
             task_type, evaluation_criteria = determine_task_type_and_criteria(user_message)
-            print(f"{BOLD}{YELLOW}Determined Task Type: {RESET}{task_type}")
-            print(f"{BOLD}{YELLOW}Evaluation Criteria: {RESET}{', '.join(evaluation_criteria)}")
+            print(f"\n{BOLD}{YELLOW}=== Task Type ==={RESET}")
+            print(f"{BOLD}{CYAN}{task_type}{RESET}")
+            print(f"\n{BOLD}{YELLOW}=== Evaluation Criteria ==={RESET}")
+            print(f"{BOLD}{CYAN}{', '.join(evaluation_criteria)}{RESET}")
 
             thought_process = ""
             iteration = 1
@@ -36,10 +39,14 @@ def chat():
             iterations_before_feedback = CONFIG['iterations_before_feedback']
 
             while iteration <= max_iterations:
+                # Prepare the system prompt and messages
                 system_prompt = get_thought_process_prompt(iteration=iteration, task_type=task_type)
                 messages = prepare_messages(chat_history, user_message, system_prompt, thought_process)
+                
                 if os.environ.get('VERBOSE_LOGGING') == '1':
                     print(f"Prepared messages: {messages}")
+                
+                # Call OpenAI and stream the response
                 response = call_openai(messages)
                 
                 if isinstance(response, dict) and 'error' in response:
@@ -47,23 +54,29 @@ def chat():
                     break
 
                 new_thoughts = ""
-                print(f"{BOLD}{YELLOW}Thought Process (Iteration {iteration}): {RESET}", end="", flush=True)
+                print(f"\n{BOLD}{YELLOW}=== Thought Process (Iteration {iteration}) ==={RESET}", end="", flush=True)
+                print(f"")
                 for formatted_content in stream_format(response, process_buffer):
                     print(formatted_content, end="", flush=True)
                     new_thoughts += formatted_content
                 print()
 
+                # Calculate and display the confidence score
                 confidence_score = calculate_confidence_score(new_thoughts)
-                print(f"{BOLD}{YELLOW}Confidence Score: {RESET}{confidence_score:.2f}")
+                print(f"\n{BOLD}{YELLOW}=== Confidence Score ==={RESET}")
+                print(f"{BOLD}{CYAN}{confidence_score:.2f}{RESET}")
 
+                # Generate and display the mind map
                 mind_map = generate_mind_map(new_thoughts)
-                print(f"{BOLD}{YELLOW}Mind Map:{RESET}\n{mind_map}")
+                print(f"\n{BOLD}{YELLOW}=== Mind Map ==={RESET}\n{BOLD}{CYAN}{mind_map}{RESET}")
 
                 thought_process += f"\n\nIteration {iteration}:\n{new_thoughts}"
 
+                # Check if confidence score exceeds threshold
                 if confidence_score > CONFIG['confidence_threshold']:
                     break
 
+                # User feedback mechanism
                 if iterations_before_feedback <= 0:
                     print(f"{BOLD}{RED}Error: iterations_before_feedback must be a positive integer.{RESET}")
                     return
@@ -86,7 +99,7 @@ def chat():
                 continue
 
             final_answer = ""
-            print(f"{BOLD}{YELLOW}Final Answer: {RESET}", end="", flush=True)
+            print(f"\n{BOLD}{YELLOW}=== Final Answer ==={RESET}", end="", flush=True)
             buffer = ""
             for chunk in final_response:
                 if chunk.choices[0].delta.content is not None:
