@@ -1,0 +1,16 @@
+# Ignore virtual environment files (.venv/ or venv/)
+venv/
+.venv/
+
+# Ignore OpenAI API keys (store them in an environment variable or a secrets manager instead)
+.env
+openai_api_key.json
+
+# Ignore compiled Python byte code and cache files
+__pycache__
+*.pyc
+*.pickle
+
+# Ignore temporary files created by the `mind_map` function
+mind_map.png
+mind_map.dot
