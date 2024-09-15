@@ -38,7 +38,7 @@ PyThoughtChain is a Python-based chat application that utilizes the OpenAI API t
 1. Open the `main.py` file and update the `OpenAI` configuration with your own API key and base URL.
 
    ```python
-   client = OpenAI(base_url="http://localhost:1234/v1", api_key="your-api-key")
+   client = openai.OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
    ```
 
 2. Run the application:
