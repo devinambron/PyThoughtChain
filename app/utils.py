@@ -40,14 +40,18 @@ def get_user_feedback():
             return feedback
 
 def calculate_confidence_score(thought_process):
-    confidence_keywords = ['certain', 'confident', 'sure', 'likely', 'probable']
-    uncertainty_keywords = ['uncertain', 'unsure', 'maybe', 'perhaps', 'possible']
+    confidence_keywords = ['certain', 'confident', 'sure', 'likely', 'probable', 'definitely', 'undoubtedly']
+    uncertainty_keywords = ['uncertain', 'unsure', 'maybe', 'perhaps', 'possible', 'might', 'could']
 
     confidence_score = sum(thought_process.lower().count(word) for word in confidence_keywords)
     uncertainty_score = sum(thought_process.lower().count(word) for word in uncertainty_keywords)
 
-    total_score = confidence_score - uncertainty_score
-    normalized_score = (total_score + 5) / 10
+    total_words = len(thought_process.split())
+    if total_words == 0:
+        return 0
+
+    confidence_ratio = (confidence_score - uncertainty_score) / total_words
+    normalized_score = (confidence_ratio + 0.1) / 0.2
     return max(0, min(1, normalized_score))
 
 def process_buffer(buffer):

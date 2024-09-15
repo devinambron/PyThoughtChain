@@ -15,3 +15,6 @@ __pycache__
 # Ignore temporary files created by the `mind_map` function
 mind_map.png
 mind_map.dot
+
+# Ignore the config.json file
+app/config.json

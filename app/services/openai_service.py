@@ -64,25 +64,24 @@ def prepare_messages(chat_history, user_message, system_prompt, thought_process=
 def determine_task_type_and_criteria(user_message):
     user_message = user_message.lower()
     
-    product_keywords = ['product', 'business', 'market', 'customer', 'innovation']
-    scientific_keywords = ['research', 'experiment', 'hypothesis', 'data', 'analysis']
-    creative_keywords = ['story', 'character', 'plot', 'writing', 'narrative']
+    task_keywords = {
+        'product_development': ['product', 'business', 'market', 'customer', 'innovation'],
+        'scientific_research': ['research', 'experiment', 'hypothesis', 'data', 'analysis'],
+        'creative_writing': ['story', 'character', 'plot', 'writing', 'narrative'],
+        'coding': ['code', 'programming', 'function', 'algorithm', 'debug']
+    }
     
-    product_count = sum(user_message.count(keyword) for keyword in product_keywords)
-    scientific_count = sum(user_message.count(keyword) for keyword in scientific_keywords)
-    creative_count = sum(user_message.count(keyword) for keyword in creative_keywords)
+    counts = {task: sum(user_message.count(keyword) for keyword in keywords)
+              for task, keywords in task_keywords.items()}
     
-    if product_count > scientific_count and product_count > creative_count:
-        task_type = 'product_development'
-        criteria = ['market viability', 'innovation', 'user needs', 'feasibility']
-    elif scientific_count > product_count and scientific_count > creative_count:
-        task_type = 'scientific_research'
-        criteria = ['methodology', 'data analysis', 'hypothesis testing', 'literature review']
-    elif creative_count > product_count and creative_count > scientific_count:
-        task_type = 'creative_writing'
-        criteria = ['character development', 'plot coherence', 'narrative style', 'originality']
-    else:
-        task_type = 'general'
-        criteria = ['clarity', 'relevance', 'accuracy', 'completeness']
+    task_type = max(counts, key=counts.get) if any(counts.values()) else 'general'
     
-    return task_type, criteria
+    criteria = {
+        'product_development': ['market viability', 'innovation', 'user needs', 'feasibility'],
+        'scientific_research': ['methodology', 'data analysis', 'hypothesis testing', 'literature review'],
+        'creative_writing': ['character development', 'plot coherence', 'narrative style', 'originality'],
+        'coding': ['functionality', 'efficiency', 'readability', 'best practices'],
+        'general': ['clarity', 'relevance', 'accuracy', 'completeness']
+    }
+    
+    return task_type, criteria[task_type]
