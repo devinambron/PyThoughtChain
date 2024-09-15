@@ -1,3 +1,4 @@
+import os
 from app.utils import format_bold_text, get_user_feedback, calculate_confidence_score, generate_mind_map, BOLD, RED, GREEN, CYAN, YELLOW, RESET
 from app.services.openai_service import call_openai, prepare_messages, determine_task_type_and_criteria
 from app.prompts import get_thought_process_prompt, get_final_answer_prompt
@@ -31,7 +32,10 @@ def chat():
 
             while iteration <= max_iterations:
                 system_prompt = get_thought_process_prompt(iteration, task_type)
-                response = call_openai(prepare_messages(chat_history, user_message, system_prompt, thought_process))
+                messages = prepare_messages(chat_history, user_message, system_prompt, thought_process)
+                if os.environ.get('VERBOSE_LOGGING') == '1':
+                    print(f"Prepared messages: {messages}")
+                response = call_openai(messages)
                 
                 if isinstance(response, dict) and 'error' in response:
                     print(f"{BOLD}{RED}Error: {response['error']}{RESET}")
@@ -75,3 +79,5 @@ def chat():
     
     except KeyboardInterrupt:
         print(f"\n{BOLD}{RED}Chat interrupted. Exiting gracefully...{RESET}")
+    except Exception as e:
+        print(f"{BOLD}{RED}An unexpected error occurred: {str(e)}{RESET}")
