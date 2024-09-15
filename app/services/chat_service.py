@@ -97,6 +97,7 @@ def chat():
     
     except KeyboardInterrupt:
         print(f"\n{BOLD}{RED}Chat interrupted. Exiting gracefully...{RESET}")
+        return  # Add this return statement to exit the function immediately
     except Exception as e:
         print(f"{BOLD}{RED}An unexpected error occurred: {str(e)}{RESET}")
     chat_history = []
@@ -186,5 +187,14 @@ def chat():
     
     except KeyboardInterrupt:
         print(f"\n{BOLD}{RED}Chat interrupted. Exiting gracefully...{RESET}")
-    except Exception as e:
-        print(f"{BOLD}{RED}An unexpected error occurred: {str(e)}{RESET}")
+        return  # Add this return statement to exit the function immediately
+
+    except ConnectionError as e:
+        print(f"{BOLD}{RED}Failed to connect to a resource: {str(e)}{RESET}")
+
+    except TimeoutError as e:
+        print(f"{BOLD}{RED}Timeout occurred: {str(e)}{RESET}")
+
+    finally:
+        # Clean up any resources or finalize your chat logic here...
+        pass
