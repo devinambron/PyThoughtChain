@@ -22,7 +22,7 @@ client = openai.OpenAI(
 if not os.getenv("OPENAI_MODEL") and os.environ.get('VERBOSE_LOGGING') == '1':
     print(f"{BOLD}{YELLOW}Warning: OPENAI_MODEL is not set. Using default model.{RESET}")
 
-def call_openai(messages, stream=False):
+def call_openai(messages, stream=True):
     try:
         if os.environ.get('VERBOSE_LOGGING') == '1':
             print(f"Calling OpenAI with model: {os.getenv('OPENAI_MODEL', 'YOUR_MODEL_HERE')}")
@@ -33,10 +33,7 @@ def call_openai(messages, stream=False):
             temperature=0.7,
             stream=stream
         )
-        if stream:
-            return completion
-        else:
-            return completion.choices[0].message.content
+        return completion
     except openai.APIError as e:
         print(f"{BOLD}{RED}OpenAI API Error: {str(e)}{RESET}")
         return {'error': str(e)}

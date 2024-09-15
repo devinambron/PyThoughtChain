@@ -41,9 +41,14 @@ def chat():
                     print(f"{BOLD}{RED}Error: {response['error']}{RESET}")
                     break
 
-                new_thoughts = response
-                formatted_new_thoughts = format_bold_text(new_thoughts)
-                print(f"{BOLD}{YELLOW}Thought Process (Iteration {iteration}): {RESET}{formatted_new_thoughts}")
+                new_thoughts = ""
+                print(f"{BOLD}{YELLOW}Thought Process (Iteration {iteration}): {RESET}", end="", flush=True)
+                for chunk in response:
+                    if chunk.choices[0].delta.content is not None:
+                        content = chunk.choices[0].delta.content
+                        new_thoughts += content
+                        print(format_bold_text(content), end="", flush=True)
+                print()  # New line after streaming is complete
 
                 confidence_score = calculate_confidence_score(new_thoughts)
                 print(f"{BOLD}{YELLOW}Confidence Score: {RESET}{confidence_score:.2f}")
@@ -65,14 +70,19 @@ def chat():
 
             final_system_prompt = get_final_answer_prompt(thought_process, evaluation_criteria)
             final_response = call_openai(prepare_messages(chat_history, user_message, final_system_prompt))
-            
+
             if isinstance(final_response, dict) and 'error' in final_response:
                 print(f"{BOLD}{RED}Error: {final_response['error']}{RESET}")
                 continue
 
-            final_answer = final_response
-            formatted_final_answer = format_bold_text(final_answer)
-            print(f"{BOLD}{YELLOW}Final Answer: {RESET}{formatted_final_answer}")
+            final_answer = ""
+            print(f"{BOLD}{YELLOW}Final Answer: {RESET}", end="", flush=True)
+            for chunk in final_response:
+                if chunk.choices[0].delta.content is not None:
+                    content = chunk.choices[0].delta.content
+                    final_answer += content
+                    print(format_bold_text(content), end="", flush=True)
+            print()  # New line after streaming is complete
 
             chat_history.append({'sender': 'user', 'text': user_message})
             chat_history.append({'sender': 'assistant', 'text': final_answer})
