@@ -6,19 +6,52 @@ PyThoughtChain is a Python-based chat application that utilizes the OpenAI API t
 
 ## Features
 
-- Determines the appropriate task type (product development, scientific research, or creative writing) and evaluation criteria based on the user's input.
-- Generates a detailed thought process, including consideration of opposing viewpoints and potential counterarguments.
+- Determines the appropriate task type (product development, scientific research, creative writing, coding, or general) based on the user's input.
+- Generates a detailed thought process using a structured approach tailored to the task type.
 - Provides a confidence score for the generated thought process.
 - Displays a mind map visualization of the thought process.
 - Allows users to provide feedback and refine the thought process iteratively.
 - Generates a final answer based on the accumulated thought process and evaluation criteria.
+- Supports streaming responses for real-time interaction.
+
+## Task Types and Thought Processes
+
+PyThoughtChain supports the following task types, each with a specialized thought process:
+
+1. Product Development
+2. Scientific Research
+3. Creative Writing
+4. Coding
+5. General Problem Solving
+
+Each task type follows a structured approach to ensure a logical flow of thoughts and comprehensive analysis.
+
+## Confidence Scoring
+
+The application calculates a confidence score for each thought iteration based on:
+
+- Presence of confidence and uncertainty keywords
+- Iteration progress
+- Self-evaluation score
+
+This score helps determine when to stop the iteration process and proceed to the final answer.
+
+## Mind Map Generation
+
+PyThoughtChain generates a simple text-based mind map of the thought process, providing a visual representation of the ideas and their relationships.
+
+## User Interaction
+
+Users can provide feedback after each thought iteration, allowing for refinement of the process. They can also choose to finalize the answer at any point.
 
 ## Use Cases
 
-- Product development: Brainstorm and evaluate ideas for new products or features, considering market trends, user needs, and technological innovations.
-- Scientific research: Propose hypotheses, design experiments, and analyze research findings using the scientific method.
-- Creative writing: Develop compelling characters, craft engaging narratives, and apply literary devices to your writing projects.
-- General knowledge: Explore a wide range of topics and receive clear, concise, and helpful information from the AI assistant.
+- Product development: Brainstorm and evaluate ideas for new products or features.
+- Scientific research: Propose hypotheses, design experiments, and analyze research findings.
+- Creative writing: Develop characters, craft narratives, and apply literary devices.
+- Coding: Solve programming problems with a structured approach.
+- General knowledge: Explore a wide range of topics with a logical problem-solving approach.
+
 
 ## Installation
 
