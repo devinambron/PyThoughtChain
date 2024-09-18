@@ -31,7 +31,7 @@ def call_openai(messages, stream=True):
         completion = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "YOUR_MODEL_HERE"),
             messages=messages,
-            temperature=0.7,
+            temperature=0.2,
             stream=stream
         )
         return completion

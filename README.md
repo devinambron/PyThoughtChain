@@ -2,6 +2,8 @@
 
 PyThoughtChain is a Python-based chat application that utilizes the OpenAI API to provide a conversational interface with advanced chain of thought capabilities.
 
+
+
 ## Features
 
 - Determines the appropriate task type (product development, scientific research, or creative writing) and evaluation criteria based on the user's input.
