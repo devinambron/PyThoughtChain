@@ -62,7 +62,14 @@ def chat():
                 print()
 
                 # Calculate and display the confidence score
-                confidence_score = calculate_confidence_score(new_thoughts)
+                confidence_score = calculate_confidence_score(
+                    new_thoughts, 
+                    iteration, 
+                    max_iterations, 
+                    correct_answers=0,  # You need to implement a way to track correct answers
+                    total_answers=iteration,
+                    self_evaluation_score=1.0  # You need to implement a way to get self-evaluation score
+                )
                 print(f"\n{BOLD}{YELLOW}=== Confidence Score ==={RESET}")
                 print(f"{BOLD}{CYAN}{confidence_score:.2f}{RESET}")
 

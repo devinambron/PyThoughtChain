@@ -73,3 +73,18 @@ Evaluate the solution based on these criteria: {', '.join(evaluation_criteria)}.
 Provide citations for any factual claims or data points.
 Consider potential limitations or areas for further research.
 Provide a concise and clear final answer to the user's request."""
+
+evaluation_prompt = """
+Evaluate the following thought process on a scale from 0 to 1, where 0 is completely flawed and 1 is perfect:
+
+{thought_process}
+
+Consider the following criteria:
+1. Logical coherence
+2. Depth of analysis
+3. Consideration of alternative viewpoints
+4. Use of relevant information
+5. Clarity of expression
+
+Provide a single float value between 0 and 1 as the score, without any additional explanation.
+"""
