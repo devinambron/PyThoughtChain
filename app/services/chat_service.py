@@ -107,6 +107,7 @@ def chat():
 
             final_answer = ""
             print(f"\n{BOLD}{YELLOW}=== Final Answer ==={RESET}", end="", flush=True)
+            print(f"")
             buffer = ""
             for chunk in final_response:
                 if chunk.choices[0].delta.content is not None:
