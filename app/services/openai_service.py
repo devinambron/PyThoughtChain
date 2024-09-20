@@ -1,64 +1,76 @@
 import os
 import openai
-from dotenv import load_dotenv
+from app.utils import BOLD, RED, RESET, YELLOW
 
-load_dotenv()
+# Check for required environment variables
+required_env_vars = ['OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_MODEL', 'LLM_SERVICE']
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 
-# Verbose logging for environment variables
-if os.environ.get('VERBOSE_LOGGING') == '1':
-    print(f"OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
-    print(f"OPENAI_API_KEY: {'*' * len(os.getenv('OPENAI_API_KEY', ''))}")
-    print(f"OPENAI_MODEL: {os.getenv('OPENAI_MODEL')}")
-
-# Check if API key is missing
-if not os.getenv("OPENAI_API_KEY"):
-    # Import formatting only when needed to avoid circular imports
-    from app.utils import BOLD, RED, RESET
-    print(f"{BOLD}{RED}Error: OPENAI_API_KEY is not set. Please run the setup script again.{RESET}")
+if missing_vars:
+    print(f"{BOLD}{RED}Error: The following environment variables are missing: {', '.join(missing_vars)}{RESET}")
+    print("Please update your .env file and run the application again.")
     exit(1)
 
-# Initialize OpenAI client
-client = openai.OpenAI(
-    base_url=os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1"),
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+if os.environ.get('VERBOSE_LOGGING') == '1':
+    print(f"LLM_SERVICE: {os.getenv('LLM_SERVICE')}")
+    print(f"OPENAI_BASE_URL: {os.getenv('OPENAI_BASE_URL')}")
+    print(f"OPENAI_MODEL: {os.getenv('OPENAI_MODEL')}")
 
-# Warn if model is not set
+llm_service = os.getenv("LLM_SERVICE", "openai").lower()
+openai_base_url = os.getenv("OPENAI_BASE_URL")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+# Initialize the OpenAI client based on the service
+if llm_service == "ollama":
+    # Ensure the base URL ends with '/v1/'
+    if not openai_base_url.endswith('/v1/'):
+        openai_base_url = openai_base_url.rstrip('/') + '/v1/'
+
+    openai.api_base = openai_base_url
+    openai.api_key = "ollama"  # Required but not used by Ollama
+elif llm_service == "lmstudio":
+    # Adjust based on LM Studio's API requirements
+    openai.api_base = openai_base_url
+    openai.api_key = "lmstudio"  # Required but not used by LM Studio
+else:  # Default to OpenAI
+    openai.api_key = openai_api_key
+    # openai.api_base defaults to OpenAI's API
+
 if not os.getenv("OPENAI_MODEL") and os.environ.get('VERBOSE_LOGGING') == '1':
-    from app.utils import BOLD, YELLOW, RESET
     print(f"{BOLD}{YELLOW}Warning: OPENAI_MODEL is not set. Using default model.{RESET}")
 
 def call_openai(messages, stream=True):
-    """
-    Calls the OpenAI API with provided messages and handles potential errors.
-    """
     try:
         if os.environ.get('VERBOSE_LOGGING') == '1':
-            print(f"Calling OpenAI with model: {os.getenv('OPENAI_MODEL', 'YOUR_MODEL_HERE')}")
+            print(f"Calling {llm_service.upper()} API at URL: {openai_base_url}")
+            print(f"Using model: {os.getenv('OPENAI_MODEL', 'DEFAULT_MODEL')}")
             print(f"Messages: {messages}")
-        
-        # API call to OpenAI
-        completion = client.chat.completions.create(
-            model=os.getenv("OPENAI_MODEL", "YOUR_MODEL_HERE"),
-            messages=messages,
-            temperature=0.2,
-            stream=stream
-        )
-        return completion
-    except openai.APIError as e:
-        # Import formatting when an error occurs to avoid circular import at the top level
-        from app.utils import BOLD, RED, RESET
-        print(f"{BOLD}{RED}OpenAI API Error: {str(e)}{RESET}")
-        return {'error': str(e)}
+
+        payload = {
+            "model": os.getenv("OPENAI_MODEL", "DEFAULT_MODEL"),
+            "messages": messages,
+            "temperature": 0.2,
+            "stream": stream
+        }
+
+        response = openai.ChatCompletion.create(**payload)
+
+        if stream:
+            # Handle streaming responses
+            for chunk in response:
+                if 'choices' in chunk and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if 'content' in delta:
+                        print(delta.content, end="", flush=True)
+            print()  # For newline after streaming
+            return {'status': 'streaming completed'}
+        else:
+            return response
     except Exception as e:
-        from app.utils import BOLD, RED, RESET
-        print(f"{BOLD}{RED}Unexpected error in call_openai: {str(e)}{RESET}")
+        print(f"{BOLD}{RED}API Error: {str(e)}{RESET}")
         return {'error': str(e)}
 
 def prepare_messages(chat_history, user_message, system_prompt, thought_process=None):
-    """
-    Prepares the message payload for OpenAI API by organizing chat history and appending the latest user input.
-    """
     messages = []
     history_limit = 10
     recent_history = chat_history[-history_limit:]
@@ -77,10 +89,10 @@ def prepare_messages(chat_history, user_message, system_prompt, thought_process=
 
     return messages
 
+# Export functions
+__all__ = ['call_openai', 'prepare_messages']
+
 def determine_task_type_and_criteria(user_message):
-    """
-    Determines the task type based on the user's input and provides criteria to evaluate the task.
-    """
     user_message = user_message.lower()
     
     task_keywords = {

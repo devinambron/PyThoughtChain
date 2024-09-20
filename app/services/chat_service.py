@@ -1,18 +1,17 @@
 import os
-from app.config import CONFIG
-from app.utils import (
-    stream_format, process_buffer, format_bold_text, get_user_feedback,
-    calculate_confidence_score, generate_mind_map, BOLD, RED, GREEN, CYAN, YELLOW, RESET
-)
-from app.services.openai_service import call_openai, prepare_messages, determine_task_type_and_criteria
-from app.prompts import get_task_type_prompt, get_thought_process_prompt, get_final_answer_prompt
+from app.services.openai_service import call_openai, prepare_messages
+from app.prompts import get_problem_solving_framework_prompt, get_thought_process_prompt
+from app.utils import stream_format, process_buffer, BOLD, GREEN, CYAN, RED, YELLOW, RESET
 
 def chat():
     chat_history = []
     
+    if os.environ.get('VERBOSE_LOGGING') == '1':
+        openai_base_url = os.getenv('OPENAI_BASE_URL', 'Default URL not set')
+        print(f"{BOLD}{YELLOW}Verbose: OpenAI Base URL: {openai_base_url}{RESET}")
+
     print(f"{BOLD}{GREEN}Welcome to PyThoughtChain.{RESET}")
     print(f"Type your messages below. Type 'exit' to quit the application.")
-    print(f"You can provide feedback after each thought iteration, press Enter to continue, or type 'finalize' to get the final answer.\n")
 
     try:
         while True:
@@ -26,25 +25,27 @@ def chat():
                 print(f"{BOLD}{RED}Error: Empty message.{RESET}")
                 continue
 
-            # Determine task type and evaluation criteria
-            task_type, evaluation_criteria = determine_task_type_and_criteria(user_message)
-            print(f"\n{BOLD}{YELLOW}=== Task Type ==={RESET}")
-            print(f"{BOLD}{CYAN}{task_type}{RESET}")
-            print(f"\n{BOLD}{YELLOW}=== Evaluation Criteria ==={RESET}")
-            print(f"{BOLD}{CYAN}{', '.join(evaluation_criteria)}{RESET}")
+            # Determine problem-solving framework
+            framework_prompt = get_problem_solving_framework_prompt(user_message)
+            framework_messages = prepare_messages(chat_history, user_message, framework_prompt)
+            framework_response = call_openai(framework_messages, stream=False)
+            
+            if isinstance(framework_response, dict) and 'error' in framework_response:
+                print(f"{BOLD}{RED}Error: {framework_response['error']}{RESET}")
+                continue
+
+            framework = framework_response.choices[0].message.content.strip()
+            print(f"\n{BOLD}{YELLOW}=== Problem-Solving Framework ==={RESET}")
+            print(f"{BOLD}{CYAN}{framework}{RESET}")
 
             thought_process = ""
             iteration = 1
-            max_iterations = CONFIG['max_iterations']
-            iterations_before_feedback = CONFIG['iterations_before_feedback']
-
+            max_iterations = 20  # Increased for persistence
+            
             while iteration <= max_iterations:
                 # Prepare the system prompt and messages
-                system_prompt = get_thought_process_prompt(iteration=iteration, task_type=task_type)
-                messages = prepare_messages(chat_history, user_message, system_prompt, thought_process)
-                
-                if os.environ.get('VERBOSE_LOGGING') == '1':
-                    print(f"Prepared messages: {messages}")
+                system_prompt = get_thought_process_prompt(iteration=iteration, framework=framework, thought_process=thought_process)
+                messages = prepare_messages(chat_history, user_message, system_prompt)
                 
                 # Call OpenAI and stream the response
                 response = call_openai(messages)
@@ -54,88 +55,43 @@ def chat():
                     break
 
                 new_thoughts = ""
-                print(f"\n{BOLD}{YELLOW}=== Thought Process (Iteration {iteration}) ==={RESET}", end="", flush=True)
-                print(f"")
+                print(f"\n{BOLD}{YELLOW}=== Thought Process (Iteration {iteration}) ==={RESET}")
                 for formatted_content in stream_format(response, process_buffer):
                     print(formatted_content, end="", flush=True)
                     new_thoughts += formatted_content
                 print()
 
-                # Calculate and display the confidence score
-                confidence_score = calculate_confidence_score(
-                    new_thoughts, 
-                    iteration, 
-                    max_iterations, 
-                    correct_answers=0,  # You need to implement a way to track correct answers
-                    total_answers=iteration,
-                    self_evaluation_score=1.0  # You need to implement a way to get self-evaluation score
-                )
-                print(f"\n{BOLD}{YELLOW}=== Confidence Score ==={RESET}")
-                print(f"{BOLD}{CYAN}{confidence_score:.2f}{RESET}")
-
-                # Generate and display the mind map
-                mind_map = generate_mind_map(new_thoughts)
-                print(f"\n{BOLD}{YELLOW}=== Mind Map ==={RESET}\n{BOLD}{CYAN}{mind_map}{RESET}")
-
                 thought_process += f"\n\nIteration {iteration}:\n{new_thoughts}"
 
-                # Check if confidence score exceeds threshold
-                if confidence_score > CONFIG['confidence_threshold']:
+                # Check for solution or dead end
+                if "SOLUTION FOUND:" in new_thoughts:
                     break
-
-                # User feedback mechanism
-                if iterations_before_feedback <= 0:
-                    print(f"{BOLD}{RED}Error: iterations_before_feedback must be a positive integer.{RESET}")
-                    return
-
-                if iteration > 0 and iteration % iterations_before_feedback == 0:
-                    user_feedback = get_user_feedback()
-                    if user_feedback == 'finalize':
-                        break
-                    elif user_feedback:
-                        user_message += f"\n\nUser feedback: {user_feedback}"
+                elif "DEAD END:" in new_thoughts:
+                    print(f"\n{BOLD}{YELLOW}Encountered a dead end. Generating new approach...{RESET}")
+                    continue
 
                 iteration += 1
 
-            # Final answer generation and streaming response
-            final_system_prompt = get_final_answer_prompt(thought_process, evaluation_criteria)
-            final_response = call_openai(prepare_messages(chat_history, user_message, final_system_prompt), stream=True)
+            # Final answer generation
+            final_prompt = f"Based on the following thought process, provide a concise final answer:\n\n{thought_process}"
+            final_messages = prepare_messages(chat_history, user_message, final_prompt)
+            final_response = call_openai(final_messages, stream=True)
             
             if isinstance(final_response, dict) and 'error' in final_response:
                 print(f"{BOLD}{RED}Error: {final_response['error']}{RESET}")
                 continue
 
-            final_answer = ""
-            print(f"\n{BOLD}{YELLOW}=== Final Answer ==={RESET}", end="", flush=True)
-            print(f"")
-            buffer = ""
-            for chunk in final_response:
-                if chunk.choices[0].delta.content is not None:
-                    content = chunk.choices[0].delta.content
-                    buffer += content
-                    formatted_content, remaining_buffer = process_buffer(buffer)
-                    if formatted_content:
-                        print(formatted_content, end="", flush=True)
-                        final_answer += formatted_content
-                    buffer = remaining_buffer
-            
-            if buffer:
-                formatted_content = format_bold_text(buffer)
+            print(f"\n{BOLD}{YELLOW}=== Final Answer ==={RESET}")
+            for formatted_content in stream_format(final_response, process_buffer):
                 print(formatted_content, end="", flush=True)
-                final_answer += formatted_content
-            print()  # New line after streaming is complete
+            print()
 
             # Update chat history
             chat_history.append({'sender': 'user', 'text': user_message})
-            chat_history.append({'sender': 'assistant', 'text': final_answer})
-    
+            chat_history.append({'sender': 'assistant', 'text': thought_process})
+
     except KeyboardInterrupt:
         print(f"\n{BOLD}{RED}Chat interrupted. Exiting gracefully...{RESET}")
-        return
-    except ConnectionError as e:
-        print(f"{BOLD}{RED}Failed to connect to a resource: {str(e)}{RESET}")
-    except TimeoutError as e:
-        print(f"{BOLD}{RED}Timeout occurred: {str(e)}{RESET}")
     except Exception as e:
         print(f"{BOLD}{RED}An unexpected error occurred: {str(e)}{RESET}")
 

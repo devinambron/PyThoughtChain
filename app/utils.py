@@ -1,7 +1,5 @@
-from app.services.openai_service import call_openai as send_request
 from app.config import CONFIG
 from app.prompts import evaluation_prompt
-import re
 
 BOLD = '\033[1m'
 RED = '\033[31m'

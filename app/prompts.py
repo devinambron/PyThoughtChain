@@ -88,3 +88,124 @@ Consider the following criteria:
 
 Provide a single float value between 0 and 1 as the score, without any additional explanation.
 """
+
+def get_problem_solving_framework_prompt(user_message):
+    return f"""Analyze the following user message and determine the most appropriate problem-solving framework to use:
+User message: "{user_message}"
+Consider frameworks such as:
+1. Scientific method
+2. Design thinking
+3. SWOT analysis
+4. Root cause analysis
+5. Six Sigma DMAIC
+6. Agile methodology
+7. Critical thinking framework
+8. Systems thinking
+9. Decision matrix
+10. Cost-benefit analysis
+Respond with only the name of the most suitable framework, without any additional text or explanation."""
+
+def get_framework_steps(framework):
+    steps = {
+        "Scientific method": [
+            "Define the question",
+            "Gather information and resources",
+            "Form hypothesis",
+            "Perform experiment and collect data",
+            "Analyze data",
+            "Interpret results and draw conclusions",
+            "Publish results"
+        ],
+        "Design thinking": [
+            "Empathize",
+            "Define",
+            "Ideate",
+            "Prototype",
+            "Test"
+        ],
+        "SWOT analysis": [
+            "Identify Strengths",
+            "Identify Weaknesses",
+            "Identify Opportunities",
+            "Identify Threats",
+            "Analyze SWOT matrix",
+            "Develop strategies"
+        ],
+        "Root cause analysis": [
+            "Define the problem",
+            "Collect data",
+            "Identify possible causal factors",
+            "Identify root cause(s)",
+            "Recommend and implement solutions",
+            "Verify solution effectiveness"
+        ],
+        "Six Sigma DMAIC": [
+            "Define",
+            "Measure",
+            "Analyze",
+            "Improve",
+            "Control"
+        ],
+        "Agile methodology": [
+            "Plan",
+            "Design",
+            "Develop",
+            "Test",
+            "Deploy",
+            "Review",
+            "Launch"
+        ],
+        "Critical thinking framework": [
+            "Identify the problem",
+            "Gather information",
+            "Analyze and evaluate",
+            "Identify assumptions",
+            "Consider alternatives",
+            "Develop conclusions",
+            "Reflect on the process"
+        ],
+        "Systems thinking": [
+            "Identify the system",
+            "Understand interconnections",
+            "Identify leverage points",
+            "Develop intervention strategies",
+            "Anticipate consequences",
+            "Implement and monitor"
+        ],
+        "Decision matrix": [
+            "Identify decision criteria",
+            "Weight the criteria",
+            "Identify alternatives",
+            "Score alternatives",
+            "Calculate weighted scores",
+            "Select best alternative"
+        ],
+        "Cost-benefit analysis": [
+            "Identify costs and benefits",
+            "Monetize all factors",
+            "Calculate net present value",
+            "Perform sensitivity analysis",
+            "Make recommendation"
+        ]
+    }
+    return steps.get(framework, ["Identify the problem", "Analyze", "Propose solutions", "Implement"])
+
+def get_thought_process_prompt(iteration, framework, thought_process):
+    steps = get_framework_steps(framework)
+    steps_str = "\n".join(f"{i+1}. {step}" for i, step in enumerate(steps))
+    
+    base_prompt = f"""You are using the {framework} framework to solve the given problem. This is iteration {iteration} of the thought process.
+
+Follow these steps:
+{steps_str}
+
+Previous thought process:
+{thought_process}
+
+Continue the problem-solving process, focusing on the next logical step within the {framework} framework. Be persistent and creative in your approach while adhering to the framework's methodology. If you encounter a dead end, clearly state "DEAD END:" and explain why, then suggest a new approach within the same framework.
+
+If you believe you've found a solution, clearly state "SOLUTION FOUND:" followed by a brief explanation.
+
+Provide your next thoughts and reasoning, explicitly mentioning which step of the {framework} you are currently on:"""
+    
+    return base_prompt
