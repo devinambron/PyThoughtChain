@@ -1,5 +1,22 @@
 # PyThoughtChain
 
+![Archive Status](https://img.shields.io/badge/status-archived-lightgrey)
+
+> **📦 Archive Notice**  
+> This project is now **archived** and maintained for historical reference. PyThoughtChain was built in September 2024, before native reasoning models existed. At that time, chain-of-thought capabilities had to be manually prompt-engineered using structured task types, confidence scoring, and iterative thought loops — techniques that modern reasoning models now handle natively.
+>
+> **When this project is still useful:**
+> - Local LLM deployments (LM Studio, Ollama, etc.)
+> - Small models (7B–13B parameters) that lack native reasoning capabilities
+> - Educational purposes: understanding how chain-of-thought was implemented pre-reasoning era
+>
+> **Modern alternatives:**
+> - **OpenAI o3** — Native reasoning with structured thinking
+> - **Claude 3.7 Sonnet** (Extended Thinking) — Built-in extended reasoning capabilities
+> - **Gemini 2.0 Flash Thinking** — Native thinking mode
+>
+> This project was ahead of its time, demonstrating sophisticated prompt engineering techniques that anticipated the reasoning capabilities we now see in modern models. While no longer necessary for most use cases, it remains a valuable reference for understanding the evolution of AI reasoning systems.
+
 PyThoughtChain is a Python-based chat application that utilizes the OpenAI API to provide a conversational interface with advanced chain of thought capabilities.
 
 ![Sample](https://github.com/devinambron/PyThoughtChain/blob/main/assets/example.png)
